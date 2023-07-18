@@ -6,7 +6,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
 from sklearn.metrics import roc_auc_score
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.preprocessing import LabelEncoder
 from data_extractor import DataExtractor
+from performance_visualizer import RocAucVisualizer
+from datetime import date
 
 class MetricStrategy:
     def compute_metric(self, y_true, y_pred):
@@ -33,10 +36,24 @@ class TopKAccuracy(MetricStrategy):
         self.k = k
 
     def compute_metric(self, y_true, y_pred_proba):
+
+        # Get the top k predictions by probability
         top_k_preds = np.argsort(y_pred_proba, axis=1)[:, -self.k:]
-        match_array = np.logical_or.reduce(top_k_preds == y_true[:, None], axis=1)
-        top_k_accuracy = np.mean(match_array)
-        return top_k_accuracy
+        print(f"top_k_preds:\n{top_k_preds}\n")
+
+        # We want to compare the indices of the top-k predictions
+        # to the indices (classes) in y_true. So let's encode y_true 
+        # into class indices as well.
+        le = LabelEncoder()
+        y_true_encoded = le.fit_transform(y_true)
+        print(f"y_true_encoded:\n{y_true_encoded}\n")
+
+        # Check if y_true is in top k for each set of predictions
+        mask = np.any(top_k_preds == y_true_encoded[:, None], axis=1)
+
+        # Compute top k accuracy
+        top_k_accuracy = np.mean(mask)
+        return top_k_accuracy 
 
 class AUC(MetricStrategy):
     def compute_metric(self, y_true, y_pred_proba):
@@ -47,7 +64,11 @@ class AUC(MetricStrategy):
         return auc_score
 
 class DistanceCalculator:
-    def __init__(self):
+    def __init__(self, model_name, validation_type, distance_metrics):
+        self.model_name = model_name
+        self.validation_type = validation_type
+        self.distance_metrics = distance_metrics
+
         self.de = DataExtractor()
         self.data = self.de.data
         self.metric_strategies = {
@@ -110,6 +131,21 @@ class DistanceCalculator:
             # Concatenate the DataFrames
             self.performance_metrics = pd.concat([self.performance_metrics, new_row], ignore_index=True)
 
+        n_classes = len(np.unique(y_true))
+
+        # ROC AUC for Cosine Distance
+        # print("y_true: ", y_true)
+        # print("y_pred_cosine_proba: ", y_pred_cosine_proba)
+        # print("y_pred_euclidean_proba: ", y_pred_euclidean_proba)
+        roc_visualizer_cosine = RocAucVisualizer(y_true, y_pred_cosine_proba, n_classes)
+        print("ROC AUC for Cosine Distance:")
+        roc_visualizer_cosine.save("./data/roc_auc_cosine")
+
+        # ROC AUC for Euclidean Distance
+        roc_visualizer_euclidean = RocAucVisualizer(y_true, y_pred_euclidean_proba, n_classes)
+        print("ROC AUC for Euclidean Distance:")
+        roc_visualizer_euclidean.save("./data/roc_auc_euclidean")
+
     def classify(self, train_data, test_data, train_labels, test_labels):
         # Define classifiers
         knn_cosine = KNeighborsClassifier(n_neighbors=3, metric='cosine')
@@ -133,8 +169,23 @@ class DistanceCalculator:
         # Print the DataFrame
         print(self.performance_metrics)
 
+        # Export metrics as csv/txt
+        for file_type in ['csv', 'txt']:
+
+            self.performance_metrics.to_csv(f'./data/{self.generate_filename(file_type)}')
+            self.performance_metrics.groupby('Metric').mean().round(4).to_csv(f'./data/Average_{self.generate_filename(file_type)}')
+
+    def generate_filename(self, file_type=None):
+        current_date = date.today().strftime('%Y%m%d')  # Get current date and format it as 'yyyymmdd'
+        
+        filename = f'{self.model_name}_Metrics_{self.validation_type}_{self.distance_metrics}_{current_date}.{file_type}'
+        
+        return filename 
 
 
 if __name__ == '__main__':
-    dc = DistanceCalculator()
+    model_name = 'KNN'
+    validation_type = 'StratifiedKFold'
+    distance_metrics = 'CosineEuclidean'
+    dc = DistanceCalculator(model_name, validation_type, distance_metrics)
     dc.perform_cross_validation()
