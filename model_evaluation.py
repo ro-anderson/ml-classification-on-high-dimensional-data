@@ -100,11 +100,11 @@ class DistanceCalculator:
         data, labels = self._prepare_data(self.data)
         data = np.array(data)
         labels = np.array(labels)
-        for train_index, test_index in skf.split(data,labels):
+        for fold_num, (train_index, test_index) in enumerate(skf.split(data,labels), start=1):
             train_data, test_data = data[train_index], data[test_index]
             train_labels, test_labels = labels[train_index], labels[test_index]
             self.calculate_distance(train_data, test_data)
-            self.classify(train_data, test_data, train_labels, test_labels)
+            self.classify(train_data, test_data, train_labels, test_labels, fold_num)
 
     def calculate_distance(self, train_data, test_data):
         cosine_distance = cosine_distances(train_data, test_data)
@@ -112,7 +112,7 @@ class DistanceCalculator:
         print(f"Cosine Distance: {cosine_distance}")
         print(f"Euclidean Distance: {euclidean_distance}")
 
-    def compute_performance_metrics(self, y_true, y_pred_cosine, y_pred_euclidean, y_pred_cosine_proba, y_pred_euclidean_proba):
+    def compute_performance_metrics(self, y_true, y_pred_cosine, y_pred_euclidean, y_pred_cosine_proba, y_pred_euclidean_proba, fold_num):
         for metric_name, strategy in self.metric_strategies.items():
             if metric_name in ['Precision', 'Recall', 'F1-Score', 'Accuracy']:
                 result_cosine = strategy.compute_metric(y_true, y_pred_cosine)
@@ -133,20 +133,17 @@ class DistanceCalculator:
 
         n_classes = len(np.unique(y_true))
 
-        # ROC AUC for Cosine Distance
-        # print("y_true: ", y_true)
-        # print("y_pred_cosine_proba: ", y_pred_cosine_proba)
-        # print("y_pred_euclidean_proba: ", y_pred_euclidean_proba)
         roc_visualizer_cosine = RocAucVisualizer(y_true, y_pred_cosine_proba, n_classes)
         print("ROC AUC for Cosine Distance:")
-        roc_visualizer_cosine.save("./data/roc_auc_cosine")
+        roc_visualizer_cosine.save(f"./data/cosine/fold_{fold_num}")
 
         # ROC AUC for Euclidean Distance
         roc_visualizer_euclidean = RocAucVisualizer(y_true, y_pred_euclidean_proba, n_classes)
         print("ROC AUC for Euclidean Distance:")
-        roc_visualizer_euclidean.save("./data/roc_auc_euclidean")
+        #roc_visualizer_euclidean.save("./data/roc_auc_euclidean")
+        roc_visualizer_euclidean.save(f"./data/euclidean/fold_{fold_num}")
 
-    def classify(self, train_data, test_data, train_labels, test_labels):
+    def classify(self, train_data, test_data, train_labels, test_labels, fold_num):
         # Define classifiers
         knn_cosine = KNeighborsClassifier(n_neighbors=3, metric='cosine')
         knn_euclidean = KNeighborsClassifier(n_neighbors=3, metric='euclidean')
@@ -164,7 +161,7 @@ class DistanceCalculator:
         prediction_euclidean_proba = knn_euclidean.predict_proba(test_data)
 
         # Compute performance metrics and add them to the DataFrame
-        self.compute_performance_metrics(test_labels, prediction_cosine, prediction_euclidean, prediction_cosine_proba, prediction_euclidean_proba)
+        self.compute_performance_metrics(test_labels, prediction_cosine, prediction_euclidean, prediction_cosine_proba, prediction_euclidean_proba, fold_num)
 
         # Print the DataFrame
         print(self.performance_metrics)
