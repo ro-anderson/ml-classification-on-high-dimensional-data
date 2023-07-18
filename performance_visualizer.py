@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import os
 from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 from sklearn.metrics import RocCurveDisplay
@@ -61,15 +62,18 @@ class RocAucVisualizer(BasePerformanceVisualizer):
             plt.legend(loc="lower right")
             plt.show()
 
-    def save(self, filename):
+    def save(self, directory):
         if not self.auc_score:
             print("No ROC curves generated. No classes with positive samples.")
             return
 
+        # Create directory if it doesn't exist
+        os.makedirs(directory, exist_ok=True)
+
         for i in self.auc_score.keys():
             plt.figure()
             plt.plot(self.fpr[i], self.tpr[i], color='darkorange', lw=2, 
-                    label='ROC curve of class {0} (area = {1:0.2f})'.format(i, self.auc_score[i]))
+                     label='ROC curve of class {0} (area = {1:0.2f})'.format(i, self.auc_score[i]))
             plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
             plt.xlim([0.0, 1.0])
             plt.ylim([0.0, 1.05])
@@ -77,7 +81,6 @@ class RocAucVisualizer(BasePerformanceVisualizer):
             plt.ylabel('True Positive Rate')
             plt.title('Receiver Operating Characteristic of class {0}'.format(i))
             plt.legend(loc="lower right")
-            plt.savefig(filename + "_class_{0}.png".format(i))
-            plt.close()  # Close the current figure
+            plt.savefig(f"{directory}/roc_auc_class_{i}.png")
 
-        print("ROC curve images saved.")
+        print("ROC curve images saved.")        
