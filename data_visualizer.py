@@ -39,12 +39,13 @@ class TSNEDataVisualizer(BaseDataVisualizer):
 
     def visualize_data(self, labels):
         plt.figure(figsize=(10, 8))
+        plt.title("2D visualization of data using t-SNE")  # Add title
         for i, label in enumerate(set(labels)):
             indices = [idx for idx, l in enumerate(labels) if l == label]
             subset = self.results[indices]
             plt.scatter(subset[:, 0], subset[:, 1], label=label)
         plt.legend()
-        plt.show()
+        plt.savefig("./data/tSNE_2D_Visualization_of_The_Data.png")  # Save the figure
 
 if __name__ == '__main__':
     de = DataExtractor()
