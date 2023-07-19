@@ -23,8 +23,6 @@ The tasks performed in this project are:
 
 9. **Write Unit Tests:** We also write a couple of unit tests for our code using the pytest testing framework.
 
-The whole process involves exploration and experimentation, adjusting parameters as needed, and interpreting the results at each step to inform our choices in the next steps.
-
 ## Results
 
 The following table shows the average results achieved by the classification model using both Cosine and Euclidean distances:
