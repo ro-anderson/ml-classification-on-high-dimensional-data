@@ -1,6 +1,7 @@
-# README.md
-
 ## Classification Task on High Dimensional Data
+
+![tSNE_2D_Visualization_of_The_Data](https://github.com/ro-anderson/classification-task/assets/41929105/f2a011b5-91b4-4ceb-9973-dfb3cfd00795)
+
 This project is a python-based solution to perform a classification task on high dimensional data. The main goal is to perform classification using the K-Nearest Neighbors algorithm. We also visualize the high dimensional data using t-SNE for dimensionality reduction, perform cross-validation to validate our model, and record the results using different metrics.
 
 The tasks performed in this project are:
