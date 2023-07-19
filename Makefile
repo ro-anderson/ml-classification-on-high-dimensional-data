@@ -1,4 +1,4 @@
-.PHONY: clean run_classifier test
+.PHONY: clean run_classifier test all
 
 clean:
 	find ./data -type f -name "*.png" -delete
@@ -12,4 +12,6 @@ run_classifier:
 
 
 test:
-	pytest -v tests/test_data_operations.py
+	pytest -v tests/test_data_operations.py || (echo "Tests failed, not running classifier."; exit 1)
+
+all: test run_classifier
