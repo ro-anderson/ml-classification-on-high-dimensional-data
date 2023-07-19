@@ -163,9 +163,6 @@ class DistanceCalculator:
         # Compute performance metrics and add them to the DataFrame
         self.compute_performance_metrics(test_labels, prediction_cosine, prediction_euclidean, prediction_cosine_proba, prediction_euclidean_proba, fold_num)
 
-        # Print the DataFrame
-        print(self.performance_metrics)
-
         # Export metrics as csv/txt
         for file_type in ['csv', 'txt']:
 
