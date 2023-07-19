@@ -99,3 +99,27 @@ This project generates a significant amount of .csv, .txt and .png files which a
     make all
     ```
 Remember to navigate to the project directory before running these commands.
+
+Output Files and Folder Structure
+After running the project, the data folder will have the following structure:
+
+├── data
+│   ├── cosine
+│   │   ├── fold_1
+│   │   ├── fold_2
+...
+-- until fold_k (the total of folds on kfold validation)
+
+│   ├── euclidean
+│   │   ├── fold_1
+│   │   └── fold_2
+...
+-- until fold_k (the total of folds on kfold validation)
+
+Each fold_X directory contains .csv and .txt files for each of the 10 folds of the cross-validation, each one with metrics (AUC, accuracy, precision, recall, F1-score, and Top-3 accuracy) for every k (number of neighbors) in the KNN algorithm, for each type of distance (Cosine and Euclidean).
+
+In the data directory, there are also two important files:
+
+``/data/tSNE_2D_Visualization_of_The_Data.png``: This is a PNG image file containing a 2D visualization of the high-dimensional data using t-SNE. This image gives a better understanding of the distribution and clusters within the data.
+
+``/data/Average_KNN_Metrics_StratifiedKFold_CosineEuclidean``: This is a CSV file containing the average metrics for each k across all 10 folds of the cross-validation. The metrics include AUC, accuracy, precision, recall, F1-score, and Top-3 accuracy for each type of distance (Cosine and Euclidean).
