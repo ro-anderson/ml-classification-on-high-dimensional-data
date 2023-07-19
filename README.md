@@ -103,6 +103,7 @@ Remember to navigate to the project directory before running these commands.
 Output Files and Folder Structure
 After running the project, the data folder will have the following structure:
 
+```bash
 ├── data
 │   ├── cosine
 │   │   ├── fold_1
@@ -115,6 +116,7 @@ After running the project, the data folder will have the following structure:
 │   │   └── fold_2
 ...
 -- until fold_k (the total of folds on kfold validation)
+```
 
 Each fold_X directory contains .csv and .txt files for each of the 10 folds of the cross-validation, each one with metrics (AUC, accuracy, precision, recall, F1-score, and Top-3 accuracy) for every k (number of neighbors) in the KNN algorithm, for each type of distance (Cosine and Euclidean).
 
